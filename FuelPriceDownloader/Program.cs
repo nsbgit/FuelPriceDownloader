@@ -21,7 +21,6 @@ public class Program
         Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(builder.Build())
                 .Enrich.FromLogContext()
-                //.WriteTo.Console()
                 .CreateLogger();
 
         try
@@ -41,7 +40,6 @@ public class Program
                     });
 
                     // DI Services
-                    services.AddTransient<IPrintService, PrintService>();
                     services.AddTransient<IFuelPriceDownloaderService, FuelPriceDownloaderService>();
                     services.AddHttpClient();
 
@@ -51,11 +49,9 @@ public class Program
                         // Setup DI in Quartz
                         q.UseMicrosoftDependencyInjectionJobFactory();
 
-                        //var jobKey = new JobKey("SampleJob");
                         var jobKey = new JobKey("DownloadFuelPricesJob");
 
                         // Add Job
-                        //q.AddJob<SampleJob>(options => options.WithIdentity(jobKey));
                         q.AddJob<DownloadFuelPricesJob>(options => options.WithIdentity(jobKey));
 
                         // Add trigger
@@ -63,7 +59,6 @@ public class Program
                         q.AddTrigger(options => options
                             .ForJob(jobKey)
                             .WithIdentity($"{jobKey}-trigger")
-                            //.WithCronSchedule("0/3 * * * * ?")
                             .WithSimpleSchedule(x => x
                                 .WithIntervalInSeconds(taskExecutionDelaySeconds)
                                 .RepeatForever()
@@ -74,9 +69,6 @@ public class Program
                 })
                 .UseSerilog()
                 .Build();
-
-            //var svc = ActivatorUtilities.CreateInstance<PrintService>(host.Services);
-            //svc.PrintCount();
 
             using var scope = host.Services.CreateScope();
 

@@ -9,6 +9,9 @@ using System.Globalization;
 
 namespace FuelPriceDownloader.Services
 {
+    /// <summary>
+    /// A service that downloads fuel prices from an API and stores them in a database.
+    /// </summary>
     public class FuelPriceDownloaderService : IFuelPriceDownloaderService
     {
         private readonly AppSettingOptions _options;
@@ -16,6 +19,13 @@ namespace FuelPriceDownloader.Services
         private readonly HttpClient _client;
         private readonly ILogger<FuelPriceDownloaderService> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the FuelPriceDownloaderService class with the specified dependencies.
+        /// </summary>
+        /// <param name="options">The application settings options.</param>
+        /// <param name="dbContext">The database context used to store the fuel prices.</param>
+        /// <param name="client">The HTTP client used to download the fuel prices.</param>
+        /// <param name="logger">The logger used to log information about the service's execution.</param>
         public FuelPriceDownloaderService(
             IOptions<AppSettingOptions> options,
             FuelPriceDbContext dbContext,
@@ -28,6 +38,10 @@ namespace FuelPriceDownloader.Services
             _logger = logger;
         }
 
+        /// <summary>
+        /// Downloads the fuel prices from the API and stores them in the database.
+        /// </summary>
+        /// <returns>A task that represents the asynchronous download and storage of the fuel prices.</returns>
         public async Task DownloadFuelPricesAsync()
         {
             try
@@ -82,6 +96,11 @@ namespace FuelPriceDownloader.Services
         }
 
 
+        /// <summary>
+        /// Creates a FuelPrice object from an array of data.
+        /// </summary>
+        /// <param name="d">An array of data representing a fuel price record.</param>
+        /// <returns>A FuelPrice object created from the data, or null if an error occurs.</returns>
         private FuelPrice CreateFuelPrice(object[] d)
         {
             DateTime recordDate;

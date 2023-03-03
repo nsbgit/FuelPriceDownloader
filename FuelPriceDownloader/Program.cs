@@ -11,9 +11,12 @@ using Serilog;
 
 public class Program
 {
+    /// <summary>
+    /// The entry point of the application.
+    /// </summary>
+    /// <param name="args">The command-line arguments.</param>
     private static void Main(string[] args)
     {
-
         var builder = new ConfigurationBuilder();
         BuildConfig(builder);
 
@@ -78,7 +81,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Log.Fatal(ex, "There was a problem starting the service");
+            Log.Fatal(ex, "There was a problem starting the host");
             return;
         }
         finally
@@ -86,6 +89,11 @@ public class Program
             Log.CloseAndFlush();
         }
     }
+
+    /// <summary>
+    /// Builds the configuration settings for the application.
+    /// </summary>
+    /// <param name="builder">The configuration builder.</param>
     static void BuildConfig(IConfigurationBuilder builder)
     {
         builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)

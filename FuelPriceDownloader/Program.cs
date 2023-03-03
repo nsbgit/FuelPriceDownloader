@@ -56,10 +56,15 @@ public class Program
                         q.AddJob<SampleJob>(options => options.WithIdentity(jobKey));
 
                         // Add trigger
+                        var taskExecutionDelaySeconds = context.Configuration.GetValue<int>("AppSettings:TaskExecutionDelaySeconds");
                         q.AddTrigger(options => options
                             .ForJob(jobKey)
                             .WithIdentity($"{jobKey}-trigger")
-                            .WithCronSchedule("0/3 * * * * ?")
+                            //.WithCronSchedule("0/3 * * * * ?")
+                            .WithSimpleSchedule(x => x
+                                .WithIntervalInSeconds(taskExecutionDelaySeconds)
+                                .RepeatForever()
+                            )
                         );
                     });
                     services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);

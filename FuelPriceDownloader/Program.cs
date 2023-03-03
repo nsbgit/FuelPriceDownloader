@@ -42,6 +42,8 @@ public class Program
 
                     // DI Services
                     services.AddTransient<IPrintService, PrintService>();
+                    services.AddTransient<IFuelPriceDownloaderService, FuelPriceDownloaderService>();
+                    services.AddHttpClient();
 
                     // Set up Quartz.Net Scheduler
                     services.AddQuartz(q =>
@@ -49,11 +51,12 @@ public class Program
                         // Setup DI in Quartz
                         q.UseMicrosoftDependencyInjectionJobFactory();
 
-                        var jobKey = new JobKey("SampleJob");
-                        //var jobKey = new JobKey("DownloadFuelPricesJob");
+                        //var jobKey = new JobKey("SampleJob");
+                        var jobKey = new JobKey("DownloadFuelPricesJob");
 
                         // Add Job
-                        q.AddJob<SampleJob>(options => options.WithIdentity(jobKey));
+                        //q.AddJob<SampleJob>(options => options.WithIdentity(jobKey));
+                        q.AddJob<DownloadFuelPricesJob>(options => options.WithIdentity(jobKey));
 
                         // Add trigger
                         var taskExecutionDelaySeconds = context.Configuration.GetValue<int>("AppSettings:TaskExecutionDelaySeconds");

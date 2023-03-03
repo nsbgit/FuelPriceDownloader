@@ -44,6 +44,9 @@ The background service should perform the following:
 2. The application will run in the background, downloading and saving fuel pricing data to the database at the scheduled intervals.
 3. To stop the application, press `Ctrl+C`.
 
+## Screenshot
+![Screenshot](https://github.com/nsbgit/FuelPriceDownloader/blob/master/Screenshot%202023-03-03%20170151.png)
+
 
 ## Contributors
 This project was created by Sukanta Sharma.

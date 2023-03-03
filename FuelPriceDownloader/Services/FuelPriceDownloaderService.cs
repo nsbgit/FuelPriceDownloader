@@ -36,54 +36,62 @@ namespace FuelPriceDownloader.Services
 
         public async Task DownloadFuelPricesAsync()
         {
-            // Download the fuel prices from the API
-            var response = await _client.GetAsync(_options.ApiUrl);
-            response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-
-            // Parse the fuel prices from the JSON response
-            var fuelPriceResponse = JsonConvert.DeserializeObject<FuelPriceResponse>(json);
-            var fuelPrices = fuelPriceResponse?.Series?
-                .SelectMany(s => s.data)
-                .Select(d => CreateFuelPrice(d))
-                .Where(fp => fp != null)
-                .ToList();
-
-            if (fuelPrices != null && fuelPrices.Any())
+            try
             {
-                // Filter out fuel prices that are older than the specified number of days
-                var cutoffDate = DateTime.UtcNow.AddDays(-_options.DaysCount);
-                fuelPrices = fuelPrices.Where(fp => fp.RecordDate >= cutoffDate).ToList();
+                // Download the fuel prices from the API
+                var response = await _client.GetAsync(_options.ApiUrl);
+                response.EnsureSuccessStatusCode();
+                var json = await response.Content.ReadAsStringAsync();
 
-                // Filter out any duplicate fuel prices
-                var recordsToSave = fuelPrices
-                    .GroupBy(fp => fp.RecordDate)
-                    .Select(g => g.First())
+                // Parse the fuel prices from the JSON response
+                var fuelPriceResponse = JsonConvert.DeserializeObject<FuelPriceResponse>(json);
+                var fuelPrices = fuelPriceResponse?.Series?
+                    .SelectMany(s => s.data)
+                    .Select(d => CreateFuelPrice(d))
+                    .Where(fp => fp != null)
                     .ToList();
 
-                // Get the dates of the records that already exist in the database
-                var existingDates = await _dbContext.FuelPrices
-                    //.Where(fp => recordsToSave.Any(r => r.RecordDate == fp.RecordDate))
-                    .Select(fp => fp.RecordDate)
-                    .ToListAsync();
-
-                // Add new records to the database
-                var newRecords = recordsToSave
-                    .Where(r => !existingDates.Contains(r.RecordDate))
-                    .ToList();
-
-                if (newRecords.Count > 0)
+                if (fuelPrices != null && fuelPrices.Any())
                 {
-                    _dbContext.FuelPrices.AddRange(newRecords);
-                    await _dbContext.SaveChangesAsync();
-                    _logger.LogInformation($"Added {newRecords.Count} new fuel price records to the database.");
-                }
-                else
-                {
-                    _logger.LogInformation("No new fuel price records to add to the database.");
+                    // Filter out fuel prices that are older than the specified number of days
+                    var cutoffDate = DateTime.UtcNow.AddDays(-_options.DaysCount);
+                    fuelPrices = fuelPrices.Where(fp => fp.RecordDate >= cutoffDate).ToList();
+
+                    // Filter out any duplicate fuel prices
+                    var recordsToSave = fuelPrices
+                        .GroupBy(fp => fp.RecordDate)
+                        .Select(g => g.First())
+                        .ToList();
+
+                    // Get the dates of the records that already exist in the database
+                    var existingDates = await _dbContext.FuelPrices
+                        //.Where(fp => recordsToSave.Any(r => r.RecordDate == fp.RecordDate))
+                        .Select(fp => fp.RecordDate)
+                        .ToListAsync();
+
+                    // Add new records to the database
+                    var newRecords = recordsToSave
+                        .Where(r => !existingDates.Contains(r.RecordDate))
+                        .ToList();
+
+                    if (newRecords.Count > 0)
+                    {
+                        _dbContext.FuelPrices.AddRange(newRecords);
+                        await _dbContext.SaveChangesAsync();
+                        _logger.LogInformation($"Added {newRecords.Count} new fuel price records to the database.");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("No new fuel price records to add to the database.");
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while downloading fuel prices.");
+            }
         }
+
 
         private FuelPrice CreateFuelPrice(object[] d)
         {

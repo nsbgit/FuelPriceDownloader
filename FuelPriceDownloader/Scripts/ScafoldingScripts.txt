@@ -1,0 +1,1 @@
+Scaffold-DbContext "Server=.;Database=FuelPricesDb;Trusted_Connection=True;TrustServerCertificate=true;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Context FuelPriceDbContext -Force

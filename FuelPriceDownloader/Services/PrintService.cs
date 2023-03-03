@@ -1,4 +1,5 @@
 ﻿using FuelPriceDownloader.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace FuelPriceDownloader.Services
             {
                 _logger.LogInformation($"Started at: {DateTime.Now}");
                 //Task.Delay(2000);
-                var lst = _dbContext.FuelPrices.ToList();
+                var lst = await _dbContext.FuelPrices.ToListAsync();
                 _logger.LogInformation($"Thre are {lst.Count} record(s)");
                 _logger.LogInformation($"Ended at: {DateTime.Now}");
             }

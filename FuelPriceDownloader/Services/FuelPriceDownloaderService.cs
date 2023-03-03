@@ -5,13 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuelPriceDownloader.Services
 {
@@ -48,31 +42,26 @@ namespace FuelPriceDownloader.Services
                 var fuelPrices = fuelPriceResponse?.Series?
                     .SelectMany(s => s.data)
                     .Select(d => CreateFuelPrice(d))
-                    .Where(fp => fp != null)
                     .ToList();
 
                 if (fuelPrices != null && fuelPrices.Any())
                 {
                     // Filter out fuel prices that are older than the specified number of days
                     var cutoffDate = DateTime.UtcNow.AddDays(-_options.DaysCount);
-                    fuelPrices = fuelPrices.Where(fp => fp.RecordDate >= cutoffDate).ToList();
 
-                    // Filter out any duplicate fuel prices
-                    var recordsToSave = fuelPrices
-                        .GroupBy(fp => fp.RecordDate)
-                        .Select(g => g.First())
-                        .ToList();
-
-                    // Get the dates of the records that already exist in the database
+                    // Add new records to the database
                     var existingDates = await _dbContext.FuelPrices
-                        //.Where(fp => recordsToSave.Any(r => r.RecordDate == fp.RecordDate))
                         .Select(fp => fp.RecordDate)
                         .ToListAsync();
 
-                    // Add new records to the database
-                    var newRecords = recordsToSave
-                        .Where(r => !existingDates.Contains(r.RecordDate))
-                        .ToList();
+                    var newRecords = new List<FuelPrice>();
+                    foreach (var fp in fuelPrices)
+                    {
+                        if (fp != null && fp.RecordDate >= cutoffDate && !existingDates.Contains(fp.RecordDate))
+                        {
+                            newRecords.Add(fp);
+                        }
+                    }
 
                     if (newRecords.Count > 0)
                     {

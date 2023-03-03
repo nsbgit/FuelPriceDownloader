@@ -1,14 +1,13 @@
-﻿using FuelPriceDownloader.Models;
+﻿using FuelPriceDownloader.Jobs;
+using FuelPriceDownloader.Models;
 using FuelPriceDownloader.Options;
 using FuelPriceDownloader.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
-using System.Configuration;
 using Quartz;
-using FuelPriceDownloader.Jobs;
+using Serilog;
 
 public class Program
 {
